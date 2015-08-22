@@ -1,0 +1,17 @@
+language: cpp
+
+compiler:
+  - gcc
+
+before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt521 -y
+  - sudo apt-get update -qq
+  - sudo apt-get install -y qt52base libfftw3-dev
+  - source /opt/qt52/bin/qt52-env.sh
+
+before_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+
+script: make
