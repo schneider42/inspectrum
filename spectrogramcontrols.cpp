@@ -56,7 +56,7 @@ void SpectrogramControls::fftSizeSliderChanged(int size)
 void SpectrogramControls::fileOpenButtonClicked()
 {
 	QString fileName = QFileDialog::getOpenFileName(
-		this, tr("Open File"), "", tr("Sample file (*.cfile *.bin);;All files (*)")
+		this, tr("Open File"), "", tr("Sample file (*.cfile *.bin *.raw);;All files (*)")
 	);
 	emit openFile(fileName);
 }
