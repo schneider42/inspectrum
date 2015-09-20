@@ -179,6 +179,11 @@ void Spectrogram::setSampleRate(int rate)
 	update();
 }
 
+int Spectrogram::getSampleRate()
+{
+	return sampleRate;
+}
+
 void Spectrogram::setFFTSize(int size)
 {
 	fftSize = size;
@@ -191,6 +196,11 @@ void Spectrogram::setFFTSize(int size)
 	}
 
 	resize(fftSize, getHeight());
+}
+
+int Spectrogram::getFFTSize()
+{
+	return fftSize;
 }
 
 void Spectrogram::setPowerMax(int power)
