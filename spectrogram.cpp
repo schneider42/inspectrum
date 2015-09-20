@@ -85,8 +85,6 @@ void Spectrogram::paintEvent(QPaintEvent *event)
 
 		paintTimeAxis(&painter, rect);
 	}
-
-	qDebug() << "Paint: " << timer.elapsed() << "ms";
 }
 
 QPixmap* Spectrogram::getPixmapTile(off_t tile)
