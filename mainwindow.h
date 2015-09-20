@@ -13,9 +13,11 @@ public:
     MainWindow();
     void openFile(QString fileName);
     void changeSampleRate(int rate);
+    void changeCenterFreq(int rate);
 
 public slots:
 	void setSampleRate(QString rate);
+	void setCenterFreq(QString rate);
 	void setFFTSize(int size);
 	void setZoomLevel(int zoom);
 

@@ -182,6 +182,16 @@ int Spectrogram::getSampleRate()
 	return sampleRate;
 }
 
+void Spectrogram::setCenterFreq(int hz)
+{
+	centerFreq = hz;
+}
+
+int Spectrogram::getCenterFreq()
+{
+	return centerFreq;
+}
+
 void Spectrogram::setFFTSize(int size)
 {
 	fftSize = size;
