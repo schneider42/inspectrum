@@ -25,6 +25,11 @@ int main(int argc, char *argv[])
 	    QCoreApplication::translate("main", "Hz"));
     parser.addOption(centerOption);
 
+    QCommandLineOption annotationOption(QStringList() << "a" << "annotations",
+	    QCoreApplication::translate("main", "CSV file with annotations: time, frequency, text"),
+	    QCoreApplication::translate("main", "filename"));
+    parser.addOption(annotationOption);
+
     // Process the actual command line
     parser.process(a);
 
@@ -45,6 +50,10 @@ int main(int argc, char *argv[])
 	    return 1;
 	}
 	mainWin.changeCenterFreq(rate);
+    }
+
+    if (parser.isSet(annotationOption)){
+	mainWin.openAnnotationFile(parser.value(annotationOption));
     }
 
     const QStringList args = parser.positionalArguments();

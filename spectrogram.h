@@ -9,6 +9,12 @@
 
 static const double Tau = M_PI * 2.0;
 
+struct annotation {
+    double timestamp;
+    double frequency;
+    QString *text;
+};
+
 class TileCacheKey;
 
 class Spectrogram : public QWidget {
@@ -24,6 +30,7 @@ public:
 	int getCenterFreq();
 	int getFFTSize();
 	QString getFileName();
+    void openAnnotationFile(QString fileName);
 
 public slots:
 	void openFile(QString fileName);
@@ -50,6 +57,7 @@ private:
 	QCache<TileCacheKey, QPixmap> pixmapCache;
 	QCache<TileCacheKey, float> fftCache;
 	uint colormap[256];
+    QList<struct annotation> annotationList;
 
 	int sampleRate;
 	int centerFreq;
@@ -63,9 +71,11 @@ private:
 	float* getFFTTile(off_t tile);
 	void getLine(float *dest, off_t sample);
 	void paintTimeAxis(QPainter *painter, QRect rect);
+	void paintAnnotations(QPainter *painter, QRect rect);
 	int sampleToLine(off_t sample);
 	QString sampleToTime(off_t sample);
 	int linesPerTile();
+
 };
 
 class TileCacheKey {

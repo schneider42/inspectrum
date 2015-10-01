@@ -49,6 +49,36 @@ void Spectrogram::openFile(QString fileName)
 	}
 }
 
+void Spectrogram::openAnnotationFile(QString fileName)
+{
+    QFile data(fileName);
+    if (!data.open(QFile::ReadOnly)) {
+        return;
+    }
+    
+    QTextStream in(&data);
+    QString line;
+
+    while(!in.atEnd()) {
+        line = in.readLine();
+        struct annotation a;
+
+        /*
+        QStringList splitline = line.split(',');
+        a.timestamp = splitline[0].toDouble();
+        a.frequency = splitline[1].toDouble();
+        a.text = new QString(splitline[2]);
+        */
+
+        QStringList splitline = line.split(' ');
+        a.timestamp = splitline[2].toDouble() / 1000.;
+        a.frequency = splitline[3].toDouble();
+        a.text = new QString(splitline[0].split(':')[0]);
+
+        annotationList.append(a);
+    }
+}
+
 QString Spectrogram::getFileName()
 {
 	return curName;
@@ -84,6 +114,7 @@ void Spectrogram::paintEvent(QPaintEvent *event)
 		}
 
 		paintTimeAxis(&painter, rect);
+        paintAnnotations(&painter, rect);
 	}
 }
 
@@ -168,6 +199,30 @@ void Spectrogram::paintTimeAxis(QPainter *painter, QRect rect)
 		painter->drawLine(0, line, 10, line);
 		painter->drawText(12, line + textOffset, sampleToTime(lineToSample(line)));
 	}
+	painter->restore();
+}
+
+void Spectrogram::paintAnnotations(QPainter *painter, QRect rect)
+{
+	// Round up for firstLine and round each to nearest linesPerGraduation
+	int firstSample = lineToSample(rect.y());
+	int lastSample = lineToSample(rect.y() + rect.height());
+
+    float startTime = (float)firstSample / sampleRate;
+    float stopTime = (float)lastSample / sampleRate;
+
+	painter->save();
+	QPen pen(Qt::white, 1, Qt::SolidLine);
+	painter->setPen(pen);
+	QFontMetrics fm(painter->font());
+
+    for (int i = 0; i < annotationList.size(); ++i) {
+        struct annotation a = annotationList.at(i);
+        if(startTime <= a.timestamp && stopTime >= a.timestamp) {
+	        painter->drawText(((a.frequency - centerFreq) /sampleRate + 0.5) * fftSize, sampleToLine(sampleRate * a.timestamp), *a.text);
+        }
+    }
+
 	painter->restore();
 }
 
