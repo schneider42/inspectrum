@@ -40,7 +40,7 @@ public slots:
 	void setPowerMax(int power);
 	void setPowerMin(int power);
 	void setZoomLevel(int zoom);
-	off_t lineToSample(int line);
+	off_t lineToSample(off_t line);
 
 protected:
 	void paintEvent(QPaintEvent *event);
