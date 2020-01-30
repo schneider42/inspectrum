@@ -324,7 +324,7 @@ void SpectrogramPlot::setZoomLevel(int zoom)
     zoomLevel = zoom;
 }
 
-void SpectrogramPlot::setSampleRate(size_t rate)
+void SpectrogramPlot::setSampleRate(double rate)
 {
     sampleRate = rate;
 }

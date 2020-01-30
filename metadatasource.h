@@ -1,5 +1,6 @@
 /*
  *  Copyright (C) 2015, Mike Walters <mike@flomp.net>
+ *  Copyright (C) 2015, Jared Boone <jared@sharebrained.com>
  *
  *  This file is part of inspectrum.
  *
@@ -19,29 +20,30 @@
 
 #pragma once
 
-#include <QMainWindow>
-#include <QScrollArea>
-#include "spectrogramcontrols.h"
-#include "plotview.h"
-#include "metadatasource.h"
+#include "util.h"
+#include <QString>
+#include <QObject>
 
-class MainWindow : public QMainWindow
+#if 1
+class Annotation
+{
+public:
+    range_t<size_t> sampleRange;
+    range_t<double> frequencyRange;
+    //QString *comment;
+    QString comment;
+};
+#endif
+
+class MetaDataSource : public QObject
 {
     Q_OBJECT
-
-public:
-    MainWindow();
-    void changeSampleRate(double rate);
-
-public slots:
-    void openFile(QString fileName);
-    void setSampleRate(QString rate);
-    void setSampleRate(double rate);
-    void setFormat(QString fmt);
-
 private:
-    SpectrogramControls *dock;
-    PlotView *plots;
-    InputSource *input;
-    MetaDataSource *meta;
+    double frequency;
+public:
+    MetaDataSource();
+    ~MetaDataSource();
+    void openFile(const char *filename);
+    QList<Annotation> annotationList;
+    double getFrequency();
 };

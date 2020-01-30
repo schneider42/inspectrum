@@ -45,9 +45,10 @@ public:
     void paintMid(QPainter &painter, QRect &rect, range_t<size_t> sampleRange) override;
     bool mouseEvent(QEvent::Type type, QMouseEvent event) override;
     std::shared_ptr<SampleSource<std::complex<float>>> input() { return inputSource; };
-    void setSampleRate(size_t sampleRate);
+    void setSampleRate(double sampleRate);
     bool tunerEnabled();
     void enableScales(bool enabled);
+    int getStride();
 
 public slots:
     void setFFTSize(int size);
@@ -71,7 +72,7 @@ private:
     int zoomLevel;
     float powerMax;
     float powerMin;
-    size_t sampleRate;
+    double sampleRate;
     bool frequencyScaleEnabled;
 
     Tuner tuner;
@@ -80,7 +81,6 @@ private:
     QPixmap* getPixmapTile(size_t tile);
     float* getFFTTile(size_t tile);
     void getLine(float *dest, size_t sample);
-    int getStride();
     float getTunerPhaseInc();
     std::vector<float> getTunerTaps();
     int linesPerTile();

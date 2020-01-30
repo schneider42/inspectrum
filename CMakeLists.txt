@@ -41,6 +41,7 @@ list(APPEND inspectrum_sources
     fft.cpp
     frequencydemod.cpp
     mainwindow.cpp
+    metadatasource.cpp
     inputsource.cpp
     phasedemod.cpp
     plot.cpp
