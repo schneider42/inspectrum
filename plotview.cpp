@@ -34,9 +34,10 @@
 #include <QClipboard>
 #include "plots.h"
 
-PlotView::PlotView(InputSource *input) : cursors(this), viewRange({0, 0})
+PlotView::PlotView(InputSource *input, MetaDataSource *meta) : cursors(this), viewRange({0, 0})
 {
     mainSampleSource = input;
+    metaDataSource = meta;
     setDragMode(QGraphicsView::ScrollHandDrag);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setMouseTracking(true);
@@ -449,8 +450,60 @@ void PlotView::paintEvent(QPaintEvent *event)
         paintTimeScale(painter, rect, viewRange);
     }
 
+    // TODO: make this an AnnotationPlot (or MetaDataPlot) and add it to the
+    // list of plots
+
+    int y = -verticalScrollBar()->value();
+    QRect view_rect = QRect(0, y, width(), spectrogramPlot->height());
+    paintAnnotations(painter, view_rect, viewRange);
 
 #undef PLOT_LAYER
+}
+
+void PlotView::paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> sampleRange)
+{
+    if(metaDataSource == nullptr) {
+        return;
+    }
+
+    // Pixel (from the top) at which 0 Hz sits
+    int zero = rect.y() + rect.height() / 2;
+
+    painter.save();
+    QPen pen(Qt::white, 1, Qt::SolidLine);
+    painter.setPen(pen);
+    QFontMetrics fm(painter.font());
+
+    for (int i = 0; i < metaDataSource->annotationList.size(); i++) {
+        Annotation a = metaDataSource->annotationList.at(i);
+
+        uint64_t commentLength = fm.boundingRect(a.comment).width() * spectrogramPlot->getStride();
+
+        // Check if:
+        //  (1) End of annotation (might be maximum, or end of comment text) is still visible in time
+        //  (2) Part of the annotation is already visible in time
+        //  (3) Upper limit of frequency is TODO
+        //  (3) Lower limit of frequency is TODO
+        //
+        int start = a.sampleRange.minimum;
+        int end = std::max(a.sampleRange.minimum + commentLength, a.sampleRange.maximum);
+
+        if(start <= sampleRange.maximum && end >= sampleRange.minimum) {
+
+            double frequency = a.frequencyRange.minimum - metaDataSource->getFrequency();
+            int x = (a.sampleRange.minimum - sampleRange.minimum) / spectrogramPlot->getStride();
+            int y = zero - frequency / sampleRate * rect.height();
+            int height = (a.frequencyRange.maximum - a.frequencyRange.minimum) / sampleRate * rect.height();
+            int width = (a.sampleRange.maximum - a.sampleRange.minimum) / spectrogramPlot->getStride();
+
+            //qDebug() << "draw " << zero << " " << frequency << " " << y << " " << a.comment;
+
+            painter.drawText(x, y, a.comment);
+            painter.drawRect(x, y-height, width, height);
+        }
+    }
+
+    painter.restore();
 }
 
 void PlotView::paintTimeScale(QPainter &painter, QRect &rect, range_t<size_t> sampleRange)

@@ -37,8 +37,9 @@ MainWindow::MainWindow()
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
     input = new InputSource();
+    meta = new MetaDataSource();
 
-    plots = new PlotView(input);
+    plots = new PlotView(input, meta);
     setCentralWidget(plots);
 
     // Connect dock inputs
@@ -85,9 +86,33 @@ void MainWindow::openFile(QString fileName)
         }
     }
 
+    QString dataFilename;
+    QString metaFilename;
+    QFileInfo fileInfo(fileName);
+    std::string suffix = std::string(fileInfo.suffix().toLower().toUtf8().constData());
+
+    if (suffix == "sigmf-meta") {
+        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
+        dataFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-data";
+        metaFilename = fileName;
+    }
+    else if (suffix == "sigmf-data") {
+        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
+        dataFilename = fileName;
+        metaFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-meta";
+    }
+    else if (suffix == "sigmf") {
+        // TODO
+        dataFilename = fileName;
+    }
+    else {
+        dataFilename = fileName;
+    }
+
     try
     {
-        input->openFile(fileName.toUtf8().constData());
+        input->openFile(dataFilename.toUtf8().constData());
+        meta->openFile(metaFilename.toUtf8().constData());
     }
     catch (const std::exception &ex)
     {
