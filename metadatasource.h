@@ -40,10 +40,12 @@ class MetaDataSource : public QObject
     Q_OBJECT
 private:
     double frequency;
+    double sampleRate;
 public:
     MetaDataSource();
     ~MetaDataSource();
     void openFile(const char *filename);
     QList<Annotation> annotationList;
     double getFrequency();
+    double getSampleRate();
 };
