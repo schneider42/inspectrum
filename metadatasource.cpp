@@ -29,6 +29,8 @@
 #include <iostream>
 #include <memory>
 
+#include <sigmf/sigmf.h>
+
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QPainter>
@@ -53,68 +55,45 @@ void MetaDataSource::openFile(const char *filename)
     QString dataFilename;
 
     std::unique_ptr<QFile> dataFile(new QFile(dataFilename));
-    QFile data(filename);
-    if (!data.open(QFile::ReadOnly | QIODevice::Text)) {
+    QFile datafile(filename);
+    if (!datafile.open(QFile::ReadOnly | QIODevice::Text)) {
         throw std::runtime_error((dataFilename + ": " + dataFile->errorString()).toStdString());
     }
 
-    QJsonDocument d = QJsonDocument::fromJson(data.readAll());
-    qDebug() << d.isNull();
-    QJsonObject obj = d.object();
+    auto data = datafile.readAll();
+    auto data_as_json = json::parse(data);
+    sigmf::SigMF<sigmf::Global<core::DescrT>,
+            sigmf::Capture<core::DescrT>,
+            sigmf::Annotation<core::DescrT> > roundtripstuff = data_as_json;
 
-    qDebug() << obj["global"].toObject()["core:sample_rate"].toInt();
-    qDebug() << obj["global"].toObject()["core:description"].toString();
+    auto global_core = roundtripstuff.global.access<core::GlobalT>();
+    //qDebug() << global_core.sample_rate;
+    //qDebug() << QString::fromStdString(global_core.description);
 
-    //uint64_t frequency = 0;
-    if(obj.contains("captures")) {
-        QJsonArray captures = obj["captures"].toArray();
-        for(auto&& item: captures) {
-            const QJsonObject& capture = item.toObject();
-            if(capture.contains("core:frequency")) {
-                //frequency = capture["core:frequency"].toVariant().toLongLong();
-                frequency = capture["core:frequency"].toVariant().toDouble();
-                qDebug() << frequency;
-            }
-        }
+    for(auto capture : roundtripstuff.captures) {
+        auto core = capture.access<core::CaptureT>();
+        frequency = core.frequency;
+        //qDebug() << frequency;
     }
 
-    QJsonArray annotations = obj["annotations"].toArray();
-
-    for(auto&& item: annotations)
-    {
+    for(auto annotation : roundtripstuff.annotations) {
         Annotation a;
-        const QJsonObject& annotation = item.toObject();
-        if(!annotation.contains("core:sample_start") ||
-                !annotation.contains("core:sample_count")) {
-            continue;
-        }
+        auto core = annotation.access<core::AnnotationT>();
+        //std::cout << "Description: " << core.description << std::endl;
+        //qDebug() << core.sample_start;
+        //qDebug() << core.freq_lower_edge << " " << core.freq_upper_edge;
 
-        // Ugly hack to get out something bigger than a 32 bit int via toInt()
-        //qDebug() << annotation["core:sample_start"].toVariant().toLongLong();
-        uint64_t sample_start =  annotation["core:sample_start"].toVariant().toLongLong();// * 40;
-        uint64_t sample_count =  annotation["core:sample_count"].toVariant().toLongLong();// * 40;
-        a.sampleRange = range_t<size_t>{sample_start, sample_start + sample_count - 1};
 
-        qDebug() << sample_start;
+        //if(!annotation.contains("core:sample_start") ||
+        //        !annotation.contains("core:sample_count")) {
+        //    continue;
+        //}
 
-        double freq_lower_edge = 0;
-        double freq_upper_edge = 0;
+        a.sampleRange = range_t<size_t>{core.sample_start, core.sample_start + core.sample_count - 1};
+        a.frequencyRange = range_t<double>{core.freq_lower_edge, core.freq_upper_edge};
+        a.comment = QString::fromStdString(core.description);
 
-        if(annotation.contains("core:freq_lower_edge") &&
-                annotation.contains("core:freq_upper_edge")) {
-            freq_lower_edge =  annotation["core:freq_lower_edge"].toDouble();
-            freq_upper_edge =  annotation["core:freq_upper_edge"].toDouble();
-
-            qDebug() << freq_lower_edge << " " << freq_upper_edge;
-        }
-
-        a.frequencyRange = range_t<double>{freq_lower_edge, freq_upper_edge};
-
-        if(annotation.contains("core:comment")) {
-            a.comment = annotation["core:comment"].toString();
-            qDebug() << a.comment;
-        }
-        //qDebug() << annotation["core:sample_startt"].toVariant().toLongLong();
+        //qDebug() << "add " << a.comment << " " << a.sampleRange.minimum << " " << a.sampleRange.maximum << " " << a.frequencyRange.minimum << " " << a.frequencyRange.maximum;
         annotationList.append(a);
     }
 }

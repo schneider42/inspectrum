@@ -29,8 +29,8 @@ if (NOT CMAKE_CXX_FLAGS)
 endif (NOT CMAKE_CXX_FLAGS)
 
 # This only works in cmake >3.1
-#set_property(TARGET inspectrum PROPERTY CXX_STANDARD 11)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+set(CMAKE_CXX_STANDARD 14)
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
 
 list(APPEND inspectrum_sources 
     abstractsamplesource.cpp
@@ -62,6 +62,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5Concurrent REQUIRED)
 find_package(FFTW REQUIRED)
 find_package(Liquid REQUIRED)
+find_package(libsigmf REQUIRED)
 
 include_directories(
     ${FFTW_INCLUDES}
