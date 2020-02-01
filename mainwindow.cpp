@@ -119,6 +119,11 @@ void MainWindow::openFile(QString fileName)
         QMessageBox msgBox(QMessageBox::Critical, "Inspectrum openFile error", QString("%1: %2").arg(fileName).arg(ex.what()));
         msgBox.exec();
     }
+
+    if(meta->getSampleRate() != 0.0) {
+        setSampleRate(meta->getSampleRate());
+    }
+
 }
 
 void MainWindow::setSampleRate(QString rate)

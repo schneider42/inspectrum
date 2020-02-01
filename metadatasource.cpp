@@ -70,6 +70,8 @@ void MetaDataSource::openFile(const char *filename)
     //qDebug() << global_core.sample_rate;
     //qDebug() << QString::fromStdString(global_core.description);
 
+    sampleRate = global_core.sample_rate;
+
     for(auto capture : roundtripstuff.captures) {
         auto core = capture.access<core::CaptureT>();
         frequency = core.frequency;
@@ -101,4 +103,9 @@ void MetaDataSource::openFile(const char *filename)
 double MetaDataSource::getFrequency()
 {
     return frequency;
+}
+
+double MetaDataSource::getSampleRate()
+{
+    return sampleRate;
 }
