@@ -34,6 +34,34 @@ before_install:
   # cmake and pkg-config are already installed.
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install qt5 fftw liquid-dsp; fi
 
+before_script:
+  - pushd /tmp
+  - git clone https://github.com/google/flatbuffers.git
+  - cd flatbuffers
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - make install
+  - cd ../..
+  - git clone https://github.com/nlohmann/json.git
+  - cd json
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - make install
+  - cd ../..
+  - git clone https://github.com/noc0lour/libsigmf
+  - cd libsigmf
+  - git checkout cleanup
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - make install
+  - popd
+
 script:
   - mkdir build
   - cd build
