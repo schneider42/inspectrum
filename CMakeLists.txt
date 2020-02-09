@@ -73,6 +73,7 @@ add_executable(inspectrum ${EXE_ARGS} ${inspectrum_sources})
 
 target_link_libraries(inspectrum
     Qt5::Core Qt5::Widgets Qt5::Concurrent
+    libsigmf::libsigmf
     ${FFTW_LIBRARIES}
     ${LIQUID_LIBRARIES}
 )
