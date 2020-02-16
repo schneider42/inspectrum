@@ -34,10 +34,9 @@
 #include <QClipboard>
 #include "plots.h"
 
-PlotView::PlotView(InputSource *input, MetaDataSource *meta) : cursors(this), viewRange({0, 0})
+PlotView::PlotView(InputSource *input) : cursors(this), viewRange({0, 0})
 {
     mainSampleSource = input;
-    metaDataSource = meta;
     setDragMode(QGraphicsView::ScrollHandDrag);
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     setMouseTracking(true);
@@ -464,10 +463,6 @@ void PlotView::paintEvent(QPaintEvent *event)
 
 void PlotView::paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> sampleRange)
 {
-    if(metaDataSource == nullptr) {
-        return;
-    }
-
     // Pixel (from the top) at which 0 Hz sits
     int zero = rect.y() + rect.height() / 2;
 
@@ -476,8 +471,8 @@ void PlotView::paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> 
     painter.setPen(pen);
     QFontMetrics fm(painter.font());
 
-    for (int i = 0; i < metaDataSource->annotationList.size(); i++) {
-        Annotation a = metaDataSource->annotationList.at(i);
+    for (int i = 0; i < mainSampleSource->annotationList.size(); i++) {
+        Annotation a = mainSampleSource->annotationList.at(i);
 
         uint64_t commentLength = fm.boundingRect(a.comment).width() * spectrogramPlot->getStride();
 
@@ -492,7 +487,7 @@ void PlotView::paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> 
 
         if(start <= sampleRange.maximum && end >= sampleRange.minimum) {
 
-            double frequency = a.frequencyRange.minimum - metaDataSource->getFrequency();
+            double frequency = a.frequencyRange.minimum - mainSampleSource->getFrequency();
             int x = (a.sampleRange.minimum - sampleRange.minimum) / spectrogramPlot->getStride();
             int y = zero - frequency / sampleRate * rect.height();
             int height = (a.frequencyRange.maximum - a.frequencyRange.minimum) / sampleRate * rect.height();

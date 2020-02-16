@@ -29,6 +29,20 @@
 
 #include <QFileInfo>
 
+#include <sigmf/sigmf.h>
+
+#include <QDebug>
+#include <QElapsedTimer>
+#include <QPainter>
+#include <QPaintEvent>
+#include <QPixmapCache>
+#include <QRect>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QFile>
+
+
 class ComplexF32SampleAdapter : public SampleAdapter {
 public:
     size_t sampleSize() override {
@@ -181,6 +195,58 @@ void InputSource::cleanup()
     }
 }
 
+void InputSource::readMetaData(const char *filename)
+{
+    QString dataFilename;
+
+    std::unique_ptr<QFile> dataFile(new QFile(dataFilename));
+    QFile datafile(filename);
+    if (!datafile.open(QFile::ReadOnly | QIODevice::Text)) {
+        throw std::runtime_error((dataFilename + ": " + dataFile->errorString()).toStdString());
+    }
+
+    auto data = datafile.readAll();
+    auto data_as_json = json::parse(data);
+    sigmf::SigMF<sigmf::Global<core::DescrT>,
+            sigmf::Capture<core::DescrT>,
+            sigmf::Annotation<core::DescrT> > roundtripstuff = data_as_json;
+
+    auto global_core = roundtripstuff.global.access<core::GlobalT>();
+    //qDebug() << global_core.sample_rate;
+    //qDebug() << QString::fromStdString(global_core.description);
+
+    //sampleRate = global_core.sample_rate;
+    setSampleRate(global_core.sample_rate);
+
+    for(auto capture : roundtripstuff.captures) {
+        auto core = capture.access<core::CaptureT>();
+        frequency = core.frequency;
+        //qDebug() << frequency;
+    }
+
+    for(auto annotation : roundtripstuff.annotations) {
+        Annotation a;
+        auto core = annotation.access<core::AnnotationT>();
+        //std::cout << "Description: " << core.description << std::endl;
+        //qDebug() << core.sample_start;
+        //qDebug() << core.freq_lower_edge << " " << core.freq_upper_edge;
+
+
+        //if(!annotation.contains("core:sample_start") ||
+        //        !annotation.contains("core:sample_count")) {
+        //    continue;
+        //}
+
+        a.sampleRange = range_t<size_t>{core.sample_start, core.sample_start + core.sample_count - 1};
+        a.frequencyRange = range_t<double>{core.freq_lower_edge, core.freq_upper_edge};
+        a.comment = QString::fromStdString(core.description);
+
+        //qDebug() << "add " << a.comment << " " << a.sampleRange.minimum << " " << a.sampleRange.maximum << " " << a.frequencyRange.minimum << " " << a.frequencyRange.maximum;
+        annotationList.append(a);
+    }
+}
+
+
 void InputSource::openFile(const char *filename)
 {
     QFileInfo fileInfo(filename);
@@ -218,7 +284,32 @@ void InputSource::openFile(const char *filename)
         sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
     }
 
-    std::unique_ptr<QFile> file(new QFile(filename));
+    QString dataFilename;
+    QString metaFilename;
+    //QFileInfo fileInfo(fileName);
+    //std::string suffix = std::string(fileInfo.suffix().toLower().toUtf8().constData());
+
+    if (suffix == "sigmf-meta") {
+        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
+        dataFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-data";
+        metaFilename = filename;
+        readMetaData(metaFilename.toUtf8().constData());
+    }
+    else if (suffix == "sigmf-data") {
+        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
+        dataFilename = filename;
+        metaFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-meta";
+        readMetaData(metaFilename.toUtf8().constData());
+    }
+    else if (suffix == "sigmf") {
+        // TODO
+        dataFilename = filename;
+    }
+    else {
+        dataFilename = filename;
+    }
+
+    std::unique_ptr<QFile> file(new QFile(dataFilename));
     if (!file->open(QFile::ReadOnly)) {
         throw std::runtime_error(file->errorString().toStdString());
     }

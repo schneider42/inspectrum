@@ -37,9 +37,9 @@ MainWindow::MainWindow()
     addDockWidget(Qt::LeftDockWidgetArea, dock);
 
     input = new InputSource();
-    meta = new MetaDataSource();
+    input->subscribe(this);
 
-    plots = new PlotView(input, meta);
+    plots = new PlotView(input);
     setCentralWidget(plots);
 
     // Connect dock inputs
@@ -86,44 +86,21 @@ void MainWindow::openFile(QString fileName)
         }
     }
 
-    QString dataFilename;
-    QString metaFilename;
-    QFileInfo fileInfo(fileName);
-    std::string suffix = std::string(fileInfo.suffix().toLower().toUtf8().constData());
-
-    if (suffix == "sigmf-meta") {
-        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
-        dataFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-data";
-        metaFilename = fileName;
-    }
-    else if (suffix == "sigmf-data") {
-        //sampleAdapter = std::unique_ptr<SampleAdapter>(new ComplexF32SampleAdapter());
-        dataFilename = fileName;
-        metaFilename = fileInfo.path() + "/" + fileInfo.completeBaseName() + ".sigmf-meta";
-    }
-    else if (suffix == "sigmf") {
-        // TODO
-        dataFilename = fileName;
-    }
-    else {
-        dataFilename = fileName;
-    }
-
     try
     {
-        input->openFile(dataFilename.toUtf8().constData());
-        meta->openFile(metaFilename.toUtf8().constData());
+        input->openFile(fileName.toUtf8().constData());
     }
     catch (const std::exception &ex)
     {
         QMessageBox msgBox(QMessageBox::Critical, "Inspectrum openFile error", QString("%1: %2").arg(fileName).arg(ex.what()));
         msgBox.exec();
     }
+}
 
-    if(meta->getSampleRate() != 0.0) {
-        setSampleRate(meta->getSampleRate());
-    }
-
+void MainWindow::invalidateEvent()
+{
+    plots->setSampleRate(input->rate());
+    setSampleRate(input->rate());
 }
 
 void MainWindow::setSampleRate(QString rate)

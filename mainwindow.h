@@ -23,9 +23,9 @@
 #include <QScrollArea>
 #include "spectrogramcontrols.h"
 #include "plotview.h"
-#include "metadatasource.h"
+//#include "metadatasource.h"
 
-class MainWindow : public QMainWindow
+class MainWindow : public QMainWindow, Subscriber
 {
     Q_OBJECT
 
@@ -38,10 +38,11 @@ public slots:
     void setSampleRate(QString rate);
     void setSampleRate(double rate);
     void setFormat(QString fmt);
+    void invalidateEvent() override;
 
 private:
     SpectrogramControls *dock;
     PlotView *plots;
     InputSource *input;
-    MetaDataSource *meta;
+//    MetaDataSource *meta;
 };

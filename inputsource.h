@@ -41,6 +41,8 @@ private:
     std::string _fmt;
     bool _realSignal = false;
 
+    void readMetaData(const char *filename);
+
 public:
     InputSource();
     ~InputSource();

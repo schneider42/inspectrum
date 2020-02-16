@@ -26,7 +26,6 @@
 #include "inputsource.h"
 #include "plot.h"
 #include "samplesource.h"
-#include "metadatasource.h"
 #include "spectrogramplot.h"
 #include "traceplot.h"
 
@@ -35,7 +34,7 @@ class PlotView : public QGraphicsView, Subscriber
     Q_OBJECT
 
 public:
-    PlotView(InputSource *input, MetaDataSource *meta);
+    PlotView(InputSource *input);
     void setSampleRate(double rate);
 
 signals:
@@ -64,7 +63,6 @@ protected:
 private:
     Cursors cursors;
     SampleSource<std::complex<float>> *mainSampleSource = nullptr;
-    MetaDataSource *metaDataSource = nullptr;
     SpectrogramPlot *spectrogramPlot = nullptr;
     std::vector<std::unique_ptr<Plot>> plots;
     range_t<size_t> viewRange;
