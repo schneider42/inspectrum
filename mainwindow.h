@@ -23,7 +23,6 @@
 #include <QScrollArea>
 #include "spectrogramcontrols.h"
 #include "plotview.h"
-//#include "metadatasource.h"
 
 class MainWindow : public QMainWindow, Subscriber
 {
@@ -44,5 +43,4 @@ private:
     SpectrogramControls *dock;
     PlotView *plots;
     InputSource *input;
-//    MetaDataSource *meta;
 };

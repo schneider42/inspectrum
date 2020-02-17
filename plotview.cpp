@@ -451,6 +451,7 @@ void PlotView::paintEvent(QPaintEvent *event)
         paintTimeScale(painter, rect, viewRange);
     }
 
+
 #undef PLOT_LAYER
 }
 

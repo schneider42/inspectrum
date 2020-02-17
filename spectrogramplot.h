@@ -48,7 +48,6 @@ public:
     void setSampleRate(double sampleRate);
     bool tunerEnabled();
     void enableScales(bool enabled);
-    int getStride();
 
 public slots:
     void setFFTSize(int size);
@@ -81,6 +80,7 @@ private:
     QPixmap* getPixmapTile(size_t tile);
     float* getFFTTile(size_t tile);
     void getLine(float *dest, size_t sample);
+    int getStride();
     float getTunerPhaseInc();
     std::vector<float> getTunerTaps();
     int linesPerTile();
