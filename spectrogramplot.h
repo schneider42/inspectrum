@@ -85,6 +85,7 @@ private:
     std::vector<float> getTunerTaps();
     int linesPerTile();
     void paintFrequencyScale(QPainter &painter, QRect &rect);
+    void paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> sampleRange);
 };
 
 class TileCacheKey

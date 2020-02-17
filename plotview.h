@@ -89,7 +89,6 @@ private:
     void updateViewRange(bool reCenter);
     void updateView(bool reCenter = false, bool expanding = false);
     void paintTimeScale(QPainter &painter, QRect &rect, range_t<size_t> sampleRange);
-    void paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> sampleRange);
 
     int sampleToColumn(size_t sample);
     size_t columnToSample(int col);

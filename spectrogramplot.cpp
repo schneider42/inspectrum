@@ -66,6 +66,7 @@ void SpectrogramPlot::paintFront(QPainter &painter, QRect &rect, range_t<size_t>
 
     if (frequencyScaleEnabled)
         paintFrequencyScale(painter, rect);
+    paintAnnotations(painter, rect, sampleRange);
 }
 
 void SpectrogramPlot::paintFrequencyScale(QPainter &painter, QRect &rect)
@@ -142,6 +143,48 @@ void SpectrogramPlot::paintFrequencyScale(QPainter &painter, QRect &rect)
             tick += bwPerTick;
         }
     }
+    painter.restore();
+}
+
+void SpectrogramPlot::paintAnnotations(QPainter &painter, QRect &rect, range_t<size_t> sampleRange)
+{
+    // Pixel (from the top) at which 0 Hz sits
+    int zero = rect.y() + rect.height() / 2;
+
+    painter.save();
+    QPen pen(Qt::white, 1, Qt::SolidLine);
+    painter.setPen(pen);
+    QFontMetrics fm(painter.font());
+
+    for (int i = 0; i < inputSource->annotationList.size(); i++) {
+        Annotation a = inputSource->annotationList.at(i);
+
+        uint64_t commentLength = fm.boundingRect(a.comment).width() * getStride();
+
+        // Check if:
+        //  (1) End of annotation (might be maximum, or end of comment text) is still visible in time
+        //  (2) Part of the annotation is already visible in time
+        //  (3) Upper limit of frequency is TODO
+        //  (3) Lower limit of frequency is TODO
+        //
+        int start = a.sampleRange.minimum;
+        int end = std::max(a.sampleRange.minimum + commentLength, a.sampleRange.maximum);
+
+        if(start <= sampleRange.maximum && end >= sampleRange.minimum) {
+
+            double frequency = a.frequencyRange.minimum - inputSource->getFrequency();
+            int x = (a.sampleRange.minimum - sampleRange.minimum) / getStride();
+            int y = zero - frequency / sampleRate * rect.height();
+            int height = (a.frequencyRange.maximum - a.frequencyRange.minimum) / sampleRate * rect.height();
+            int width = (a.sampleRange.maximum - a.sampleRange.minimum) / getStride();
+
+            //qDebug() << "draw " << zero << " " << frequency << " " << y << " " << a.comment;
+
+            painter.drawText(x, y, a.comment);
+            painter.drawRect(x, y-height, width, height);
+        }
+    }
+
     painter.restore();
 }
 
