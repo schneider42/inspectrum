@@ -109,7 +109,8 @@ void MainWindow::setSampleRate(QString rate)
 
 void MainWindow::setSampleRate(double rate)
 {
-    dock->sampleRate->setText(QString::number(rate));
+    // Cast into an integer to avoid engineering notation
+    dock->sampleRate->setText(QString::number((uint64_t)rate));
 }
 
 void MainWindow::setFormat(QString fmt)
